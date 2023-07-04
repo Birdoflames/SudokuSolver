@@ -9,20 +9,20 @@ Sudoku_Board = [
     [4, 9, 1, 0, 6, 7, 3, 5, 8],
     [5, 3, 6, 1, 4, 8, 7, 2, 0]
 ]
-columns = [
-    column1 = [],
-    column2,
-    column3,
-    column4,
-    column5,
-    column6,
-    column7,
-    column8,
-    column9s
-]
+column0 = []
+column1 = []
+column2 = []
+column3 = []
+column4 = []
+column5 = []
+column6 = []
+column7 = []
+column8 = []
+columns = [column0, column1, column2, column3, column4, column5, column6, column7, column8]
+
 for row in Sudoku_Board:
-    for i in range(0 - 9):
-        current_column = columns[i+1]
+    for i in range(0, 9):
+        current_column = columns[i]
         current_column.append(row[i])
 
 print(columns)
