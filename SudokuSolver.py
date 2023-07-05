@@ -1,35 +1,67 @@
-Sudoku_Board = [
-    [0, 2, 5, 6, 3, 1, 8, 4, 7],
-    [6, 1, 8, 5, 0, 4, 2, 9, 3],
-    [3, 7, 4, 9, 8, 2, 5, 0, 1],
-    [7, 4, 9, 8, 2, 6, 0, 3, 5],
-    [8, 5, 2, 4, 1, 0, 9, 7, 6],
-    [1, 6, 0, 7, 9, 5, 4, 8, 2],
-    [2, 0, 7, 3, 5, 9, 6, 1, 4],
-    [4, 9, 1, 0, 6, 7, 3, 5, 8],
-    [5, 3, 6, 1, 4, 8, 7, 2, 0]
-]
-column0 = []
-column1 = []
-column2 = []
-column3 = []
-column4 = []
-column5 = []
-column6 = []
-column7 = []
-column8 = []
-columns = [column0, column1, column2, column3, column4, column5, column6, column7, column8]
+import pandas as pd
+sudoku = []
 
-for row in Sudoku_Board:
-    for i in range(0, 9):
-        current_column = columns[i]
-        current_column.append(row[i])
 
-print(columns)
+def get_row(cell):
+    pass
 
-# todo: get input
-# todo: define rows, columns and 3*3 squares
-# todo: check what numbers are 0's
-# todo: create function to check if a number is valid
-# todo: on each 0 go one by one till sudoku is solved
-# todo: deal with cases in which there is more than one option
+
+def get_column(cell):
+    pass
+
+
+def get_square(cell):
+    pass
+
+
+def check_row(row, cell):
+    pass
+
+
+def check_column(column, cell):
+    pass
+
+
+def check_square(square, cell):
+    pass
+
+
+
+def check_cell(num, cell):
+    row = get_row(cell)
+    column = get_column(cell)
+    square = get_square(cell)
+    row_valid = check_row(row, cell)
+    column_valid = check_column(column, cell)
+    square_valid = check_square(square, cell)
+    if row_valid and column_valid and square_valid:
+        return True
+    return False
+
+
+def fill_cells(cells):
+    filled_cells = []
+    for cell in cells:
+        for i in range(1, 10):
+            cell_valid = check_cell(i, cell)
+            if cell_valid:
+                cell = i
+                filled_cells.append(cell)
+    return filled_cells
+
+
+def check_0(board):
+    empty_cells = []
+    for cell in board:
+        if cell == 0:
+            empty_cells.append(cell)
+    return empty_cells
+
+
+def solve_sudoku(board):
+    cells_to_fill = check_0(board)
+    fill_cells(cells_to_fill)
+
+
+if __name__ == '__main__':
+    solve_sudoku(sudoku)
