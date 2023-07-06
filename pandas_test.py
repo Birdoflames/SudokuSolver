@@ -16,10 +16,17 @@ if __name__ == '__main__':
     df = pd.DataFrame(Sudoku_Board)
     df.index = np.arange(1, len(df) + 1)
     df.columns = np.arange(1, len(df) + 1)
-    #print(tabulate(df, headers='keys', tablefmt='fancy_grid'))
     empty_cells = []
-    for row in Sudoku_Board:
-        for cell in row:
-            if cell == 0:
-                empty_cells.append(df.iloc(cell))
+    df_new = df.iat[0, 0]
+    for i in range(0, 9):
+        for j in range(0, 9):
+            if df.iat[i, j] == 0:
+                empty_coords = [i, j]
+                empty_cells.append(empty_coords)
     print(empty_cells)
+    square1 = [[0, 2], [0, 2]]
+
+    # print(tabulate(df, headers='keys', tablefmt='fancy_grid'))
+
+
+

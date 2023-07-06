@@ -1,13 +1,19 @@
 import pandas as pd
+import numpy as np
+from tabulate import tabulate
 sudoku = []
+
+df = pd.DataFrame(sudoku)
+df.index = np.arange(1, len(df) + 1)
+df.columns = np.arange(1, len(df) + 1)
 
 
 def get_row(cell):
-    pass
+    return cell[1]
 
 
 def get_column(cell):
-    pass
+    return cell[0]
 
 
 def get_square(cell):
@@ -52,9 +58,11 @@ def fill_cells(cells):
 
 def check_0(board):
     empty_cells = []
-    for cell in board:
-        if cell == 0:
-            empty_cells.append(cell)
+    for i in range(0, 9):
+        for j in range(0, 9):
+            if df.iat[i, j] == 0:
+                empty_coords = [i, j]
+                empty_cells.append(empty_coords)
     return empty_cells
 
 
