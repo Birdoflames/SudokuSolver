@@ -2,6 +2,8 @@ import pandas as pd
 from tabulate import tabulate
 import numpy as np
 import math
+import random
+import time
 
 
 def get_squares_by_column():
@@ -41,7 +43,7 @@ def get_column(df, c):
 
 
 def get_square(r, c):
-    return get_squares_by_row()[r].intersection(get_squares_by_row()[c])
+    return list(get_squares_by_column()[c].intersection(get_squares_by_row()[r]))
 
 
 def row_valid(df, r, num):
@@ -58,29 +60,115 @@ def column_valid(df, c, num):
 
 def square_df(r, c):
     temp = [
-        [1, 2, 3],
-        [4, 5, 6],
-        [7, 8, 0]
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8]
     ]
     df = pd.DataFrame(temp)
-    return df[r][c]
+    return df.iloc[r, c]
+
+
+def get_squares():
+    return {
+        0: [],
+        1: [],
+        2: [],
+        3: [],
+        4: [],
+        5: [],
+        6: [],
+        7: [],
+        8: [],
+    }
 
 
 def square_maker(r, c):
-    y = math.floor(r/3)
-    x = math.floor(c/3)
+    y = math.floor(r / 3)
+    x = math.floor(c / 3)
     square = square_df(y, x)
+    return square
+
+
+def square_valid(row, column, value, squares):
+    square = square_maker(row, column)
+    for item in squares[square]:
+        if item == value:
+            return False
+    return True
+
+
+def numbers():
+    return {1, 2, 3, 4, 5, 6, 7, 8, 9}
+
+
+def numbers_in_square(row, column, squares):  # squares = dict of squares
+    square = square_maker(row, column)  # square number
+    current_square = squares[square]
+    current_square_nums = [x for x in current_square if x != 0]
+    return current_square_nums
+
+
+def numbers_in_row(df, r):
+    row = get_row(df, r)
+    row = [x for x in row if x != 0]
+    return row
+
+
+def numbers_in_column(df, c):
+    column_values = df[c].tolist()
+    return [x for x in column_values if x != 0]
+
+
+def get_nums(row, column, df, squares):
+    av_nums = numbers().difference(
+        numbers_in_square(row, column, squares),
+        numbers_in_row(df, row),
+        numbers_in_column(df, column)
+    )
+    av_nums_list = list(av_nums)
+    # print('what my length ',av_nums_list)
+    # print(tabulate(df, headers='keys', tablefmt='fancy_grid'))
+    random.shuffle(av_nums_list)
+    return av_nums_list
+
+
+def fill_cell(df, row, column, value, squares):
+
+    if column_valid(df, column, value) and row_valid(df, row, value) and square_valid(row, column, value, squares):
+        squares[square_maker(row, column)].append(value)
+        df.iloc[row, column] = value
+        return True
+    return False
 
 
 def main():
+    start_time = time.time()
     zeros = [[0 for r in range(9)] for c in range(9)]
     sudoku = pd.DataFrame(zeros)
-
-    for ci in range(9):
-        for ri in range(9):
-            rand = np.random.randint(1, 10)
-
-            # if column_valid(c, rand) and row_valid(r, rand):
+    squares = get_squares()
+    for ri in range(9):
+        for ci in range(9):
+            nums = get_nums(ri, ci, sudoku, squares)
+            least_options = [0, 0]
+            for num in nums:
+                current_least_options = [float('inf'), 0]
+                for c in range(9):
+                    for r in range(9):
+                        current_av_nums = numbers().difference(
+                            numbers_in_square(r, c, squares), numbers_in_row(sudoku, r), numbers_in_column(sudoku, c)
+                        )
+                        if len(current_av_nums) < current_least_options[0]:
+                            current_least_options[0] = len(current_av_nums)
+                            current_least_options[1] = num
+                if current_least_options[0] > least_options[0]:
+                    least_options[0] = current_least_options[0]
+                    least_options[1] = current_least_options[1]
+            if least_options[1] != 0:
+                fill_cell(sudoku, ri, ci, least_options[1], squares)
+            print(least_options[1])
+    print(tabulate(sudoku, headers='keys', tablefmt='fancy_grid'))
+    elapsed_time = time.time() - start_time
+    print(f'Elapsed time: {elapsed_time:.5f} seconds')
 
 
 if __name__ == '__main__':
