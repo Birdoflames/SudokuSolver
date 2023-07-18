@@ -1,119 +1,166 @@
+import math
+import random
+import time
+
 import pandas as pd
-import numpy as np
 from tabulate import tabulate
-sudoku = [
-    [0, 2, 5, 6, 3, 1, 8, 4, 7],
-    [6, 1, 8, 5, 0, 4, 2, 9, 3],
-    [3, 7, 4, 9, 8, 2, 5, 0, 1],
-    [7, 4, 9, 8, 2, 6, 0, 3, 5],
-    [8, 5, 2, 4, 1, 0, 9, 7, 6],
-    [1, 6, 0, 7, 9, 5, 4, 8, 2],
-    [2, 0, 7, 3, 5, 9, 6, 1, 4],
-    [4, 9, 1, 0, 6, 7, 3, 5, 8],
-    [5, 3, 6, 1, 4, 8, 7, 2, 0]
-]
-
-df = pd.DataFrame(sudoku)
-df.index = np.arange(1, len(df) + 1)
-df.columns = np.arange(1, len(df) + 1)
 
 
-def get_row(cell):
-    return cell[0]
+def get_squares_by_column():
+    return {
+        0: {1, 4, 7},
+        1: {1, 4, 7},
+        2: {1, 4, 7},
+        3: {2, 5, 8},
+        4: {2, 5, 8},
+        5: {2, 5, 8},
+        6: {3, 6, 9},
+        7: {3, 6, 9},
+        8: {3, 6, 9}
+    }
 
 
-def get_column(cell):
-    return cell[1]
+def get_squares_by_row():
+    return {
+        0: {1, 2, 3},
+        1: {1, 2, 3},
+        2: {1, 2, 3},
+        3: {4, 5, 6},
+        4: {4, 5, 6},
+        5: {4, 5, 6},
+        6: {7, 8, 9},
+        7: {7, 8, 9},
+        8: {7, 8, 9}
+    }
 
 
-index_to_square = {
-    0: [0],
-    1: [0],
-    2: [0
-        ]
-}
-
-square1 = [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]]
-square2 = [[0, 3], [0, 4], [0, 5], [1, 3], [1, 4], [1, 5], [2, 3], [2, 4], [2, 5]]
-square3 = [[0, 6], [0, 7], [0, 8], [1, 6], [1, 7], [1, 8], [2, 6], [2, 7], [2, 8]]
-square4 = [[3, 0], [3, 1], [3, 2], [4, 0], [4, 1], [4, 2], [5, 0], [5, 1], [5, 2]]
-square5 = [[3, 3], [3, 4], [3, 5], [4, 3], [4, 4], [4, 5], [5, 3], [5, 4], [5, 5]]
-square6 = [[3, 6], [3, 7], [3, 8], [4, 6], [4, 7], [4, 8], [5, 6], [5, 7], [5, 8]]
-square7 = [[6, 0], [6, 1], [6, 2], [7, 0], [7, 1], [7, 2], [8, 0], [8, 1], [8, 2]]
-square8 = [[6, 3], [6, 4], [6, 5], [7, 3], [7, 4], [7, 5], [8, 3], [8, 4], [8, 5]]
-square9 = [[6, 6], [6, 7], [6, 8], [7, 6], [7, 7], [7, 8], [8, 6], [8, 7], [8, 8]]
-squares = [square1, square2, square3, square4, square5, square6, square7, square8, square9]
+def get_row(df, r):
+    return df.iloc[r].to_list()
 
 
-def get_square(cell):
-    for square_index, square in enumerate(squares):
-        for i in square:
-            if cell == i:
-                return square_index+1
+def get_column(df, c):
+    return df[c]
 
 
-def check_row(row, cell):
-    for i in row:
-        if df.iloc(cell) == i:
-            return False
-    return True
-
-def check_column(column, cell):
-    for i in column:
-        if df.iloc(cell) == i:
-            return False
-    return True
+def get_square(r, c):
+    return list(get_squares_by_column()[c].intersection(get_squares_by_row()[r]))
 
 
-def check_square(square, cell):
-    for i in squares[square-1]:
-        if df.iloc(cell) == i:
-            return False
-    return True
-
-
-
-def check_cell(num, cell):
-    row = get_row(cell)
-    column = get_column(cell)
-    square = get_square(cell)
-    row_valid = check_row(row, cell)
-    column_valid = check_column(column, cell)
-    square_valid = check_square(square, cell)
-    if row_valid and column_valid and square_valid:
+def row_valid(df, r, num):
+    if num not in get_row(df, r):
         return True
     return False
 
 
-def fill_cells(cells):
-    filled_cells = []
-    for cell in cells:
-        for i in range(1, 10):
-            cell_valid = check_cell(i, cell)
-            if cell_valid:
-                cell = i
-                filled_cells.append(cell)
-    return filled_cells
+def column_valid(df, c, num):
+    if num not in df[c].to_list():
+        return True
+    return False
 
 
-def check_0(board):
-    empty_cells = []
-    for i in range(0, 9):
-        for j in range(0, 9):
-            if df.iat[i, j] == 0:
-                empty_coords = [i, j]
-                empty_cells.append(empty_coords)
-    return empty_cells
+def square_df(r, c):
+    temp = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8]
+    ]
+    df = pd.DataFrame(temp)
+    return df.iloc[r, c]
 
 
-def solve_sudoku(board):
-    cells_to_fill = check_0(board)
-    fill_cells(cells_to_fill)
+def get_squares():
+    return {
+        0: [], 1: [], 2: [],
+        3: [], 4: [], 5: [],
+        6: [], 7: [], 8: [],
+    }
+
+
+def square_maker(r, c):
+    y = math.floor(r / 3)
+    x = math.floor(c / 3)
+    square = square_df(y, x)
+    return square
+
+
+def square_valid(row, column, value, squares):
+    square = square_maker(row, column)
+    for item in squares[square]:
+        if item == value:
+            return False
+    return True
+
+
+def numbers():
+    return {1, 2, 3, 4, 5, 6, 7, 8, 9}
+
+
+def numbers_in_square(row, column, squares):  # squares = dict of squares
+    square = square_maker(row, column)  # square number
+    current_square = squares[square]
+    current_square_nums = [x for x in current_square if x != 0]
+    return current_square_nums
+
+
+def numbers_in_row(df, r):
+    row = get_row(df, r)
+    row = [x for x in row if x != 0]
+    return row
+
+
+def numbers_in_column(df, c):
+    column_values = df[c].tolist()
+    return [x for x in column_values if x != 0]
+
+
+def get_nums(row, column, df, squares):
+    av_nums = numbers().difference(
+        numbers_in_square(row, column, squares),
+        numbers_in_row(df, row),
+        numbers_in_column(df, column)
+    )
+    av_nums_list = list(av_nums)
+    # print('what my length ',av_nums_list)
+    # print(tabulate(df, headers='keys', tablefmt='fancy_grid'))
+    random.shuffle(av_nums_list)
+    return av_nums_list
+
+
+def fill_cell(df, row, column, value, squares):
+
+    if column_valid(df, column, value) and row_valid(df, row, value) and square_valid(row, column, value, squares):
+        df.iloc[row, column] = value
+        squares[square_maker(row, column)].append(value)
+        return True
+    return False
+
+
+def solve_sudoku():
+    if sudoku.iloc[ci, ri] == 0:
+        if len(get_nums(ri, ci, sudoku, squares)) == 0:
+            av_nums = get_nums(ri, ci, sudoku, squares)
+            if ci == 0:
+                av_nums1 = get_nums(ci, ri - 1, sudoku, squares)
+                fill_cell(sudoku, ci, ri - 1, av_nums1[0], squares)
+            else:
+                av_nums2 = get_nums(ci - 1, ri, sudoku, squares)
+                fill_cell(sudoku, ri, ci - 1, av_nums2[0], squares)
+            fill_cell(sudoku, ci, ri, av_nums, squares)
+
+
+def main():
+    start_time = time.time()
+    zeros = [[0 for r in range(9)] for c in range(9)]
+    sudoku = pd.DataFrame(zeros)
+    squares = get_squares()
+    for ri in range(9):
+        for ci in range(9):
+
+
+    print(tabulate(sudoku, headers='keys', tablefmt='fancy_grid'))
+    elapsed_time = time.time() - start_time
+    print(f'Elapsed time: {elapsed_time:.5f} seconds')
 
 
 if __name__ == '__main__':
-    #test = [6, 7]
-    #print(check_square(1, test))
-    print(df[2])
-
-    #solve_sudoku(sudoku)
+    main()

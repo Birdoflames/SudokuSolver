@@ -35,11 +35,23 @@ def get_squares_by_row():
 
 
 def get_row(df, r):
-    return df.iloc[r].to_list()
+    row = []
+    for i in df.iloc[r].tolist():
+        if type(i) == list:
+            row.append(0)
+        else:
+            row.append(i)
+    return row
 
 
 def get_column(df, c):
-    return df[c]
+    col = []
+    for i in df[c].tolist():
+        if type(i) == list:
+            col.append(0)
+        else:
+            col.append(i)
+    return col
 
 
 def get_square(r, c):
@@ -70,15 +82,9 @@ def square_df(r, c):
 
 def get_squares():
     return {
-        0: [],
-        1: [],
-        2: [],
-        3: [],
-        4: [],
-        5: [],
-        6: [],
-        7: [],
-        8: [],
+        0: [], 1: [], 2: [],
+        3: [], 4: [], 5: [],
+        6: [], 7: [], 8: [],
     }
 
 
@@ -115,57 +121,62 @@ def numbers_in_row(df, r):
 
 
 def numbers_in_column(df, c):
-    column_values = df[c].tolist()
+    column_values = get_column(df, c)
     return [x for x in column_values if x != 0]
 
 
 def get_nums(row, column, df, squares):
+    square_nums = set(get_square(row, column))
+    row_nums = set(get_row(df, row))
+    col_nums = set(get_column(df, column))
     av_nums = numbers().difference(
-        numbers_in_square(row, column, squares),
-        numbers_in_row(df, row),
-        numbers_in_column(df, column)
+        square_nums,
+        row_nums,
+        col_nums
     )
     av_nums_list = list(av_nums)
     # print('what my length ',av_nums_list)
     # print(tabulate(df, headers='keys', tablefmt='fancy_grid'))
-    random.shuffle(av_nums_list)
+    # random.shuffle(av_nums_list)
+    # print(av_nums_list)
     return av_nums_list
 
 
 def fill_cell(df, row, column, value, squares):
 
     if column_valid(df, column, value) and row_valid(df, row, value) and square_valid(row, column, value, squares):
-        squares[square_maker(row, column)].append(value)
         df.iloc[row, column] = value
+        squares[square_maker(row, column)].append(value)
         return True
     return False
 
 
 def main():
     start_time = time.time()
-    zeros = [[0 for r in range(9)] for c in range(9)]
-    sudoku = pd.DataFrame(zeros)
+    df = [[[1, 2, 3, 4, 5, 6, 7, 8, 9] for r in range(9)] for c in range(9)]
+    sudoku = pd.DataFrame(df)
     squares = get_squares()
-    for ri in range(9):
-        for ci in range(9):
+    for ci in range(9):
+        for ri in range(9):
             nums = get_nums(ri, ci, sudoku, squares)
-            least_options = [0, 0]
+            min_options_lost = float('inf')
+            number_used = None
             for num in nums:
-                current_least_options = [float('inf'), 0]
-                for c in range(9):
-                    for r in range(9):
-                        current_av_nums = numbers().difference(
-                            numbers_in_square(r, c, squares), numbers_in_row(sudoku, r), numbers_in_column(sudoku, c)
-                        )
-                        if len(current_av_nums) < current_least_options[0]:
-                            current_least_options[0] = len(current_av_nums)
-                            current_least_options[1] = num
-                if current_least_options[0] > least_options[0]:
-                    least_options[0] = current_least_options[0]
-                    least_options[1] = current_least_options[1]
-            if least_options[1] != 0:
-                fill_cell(sudoku, ri, ci, least_options[1], squares)
-            print(least_options[1])
+                items_affected = get_row(sudoku, ri) + get_column(sudoku, ci) + squares(get_square(ri, ci)[0])
+                # noinspection SpellCheckingInspection
+                items_affected_coords = [0, ci], [1, ci], [2, ci], [3, ci], [4, ci], [5, ci], [6, ci], [7, ci], [8, ci], [ri, 0], [ri, 1], [ri, 2], [ri, 3], [ri, 4], [ri, 5], [ri, 6], [ri, 7], [ri, 8], [ri, 9]
+                affected_set = set(items_affected_coords)
+                options_lost = 0
+
+                for item in items_affected:
+                    options_lost += len(list(sudoku.iloc[item[0]][item[1]])) - len(get_nums(item[0], item[1], sudoku, squares))
+                    sudoku.iloc[[item[0]][item[1]]] = get_nums(item[0], item[1], sudoku, squares)
+                if options_lost < min_options_lost:
+                    min_options_lost = options_lost
+                    number_used = num
+            if number_used != 0:
+                fill_cell(sudoku, ri, ci, number_used, squares)
+
     print(tabulate(sudoku, headers='keys', tablefmt='fancy_grid'))
     elapsed_time = time.time() - start_time
     print(f'Elapsed time: {elapsed_time:.5f} seconds')
