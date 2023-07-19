@@ -151,6 +151,15 @@ def fill_cell(df, row, column, value, squares):
     return False
 
 
+def get_square_coords(r, c, s):
+    coords = []
+    for c in range(9):
+        for r in range(9):
+            if square_maker(r, c) == s:
+                coords.append([r, c])
+    return coords
+
+
 def main():
     start_time = time.time()
     df = [[[1, 2, 3, 4, 5, 6, 7, 8, 9] for r in range(9)] for c in range(9)]
@@ -162,18 +171,19 @@ def main():
             min_options_lost = float('inf')
             number_used = None
             for num in nums:
-                items_affected = get_row(sudoku, ri) + get_column(sudoku, ci) + squares(get_square(ri, ci)[0])
-                # noinspection SpellCheckingInspection
-                items_affected_coords = [0, ci], [1, ci], [2, ci], [3, ci], [4, ci], [5, ci], [6, ci], [7, ci], [8, ci], [ri, 0], [ri, 1], [ri, 2], [ri, 3], [ri, 4], [ri, 5], [ri, 6], [ri, 7], [ri, 8], [ri, 9]
-                affected_set = set(items_affected_coords)
+                items_affected_coords = [[0, ci], [1, ci], [2, ci], [3, ci], [4, ci], [5, ci], [6, ci], [7, ci], [8, ci], [ri, 0], [ri, 1], [ri, 2], [ri, 3], [ri, 4], [ri, 5], [ri, 6], [ri, 7], [ri, 8]]
+                coords = get_square_coords(ri, ci, get_square(ri, ci)[0])
+                for coord in coords:
+                    items_affected_coords.append(coord)
+                # affected_set = set(items_affected_coords)
                 options_lost = 0
-
-                for item in items_affected:
-                    options_lost += len(list(sudoku.iloc[item[0]][item[1]])) - len(get_nums(item[0], item[1], sudoku, squares))
-                    sudoku.iloc[[item[0]][item[1]]] = get_nums(item[0], item[1], sudoku, squares)
+                print(items_affected_coords)
+                for item in items_affected_coords:
+                    options_lost += len(list(sudoku.iloc[item[0], item[1]])) - len(get_nums(item[0], item[1], sudoku, squares))
                 if options_lost < min_options_lost:
                     min_options_lost = options_lost
                     number_used = num
+                    sudoku.iloc[item[0]][item[1]] = get_nums(item[0], item[1], sudoku, squares)
             if number_used != 0:
                 fill_cell(sudoku, ri, ci, number_used, squares)
 
